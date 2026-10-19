@@ -1,51 +1,40 @@
 <template>
-    <div class="grey flex-grow-1 medusahc-tool d-flex flex-column" :class="toolClasses">
-        <v-row class="flex-grow-0">
-            <v-col class="px-6 pt-6 pb-3">
-                <v-btn dense small class="w-100 elevation-0" :disabled="selectDisabled" @click="selectTool">
-                    {{ toolName }}
-                </v-btn>
-            </v-col>
-        </v-row>
-        <v-row class="my-0">
-            <v-col class="pl-6 pr-0 py-0 d-flex flex-column">
-                <v-tooltip top>
-                    <template #activator="{ on, attrs }">
-                        <span class="d-flex align-center justify-center" v-bind="attrs" v-on="on">
-                            <afc-filament-reel
-                                :percent="spoolPercent"
-                                :color="spoolColor"
-                                class="filament-spool"
-                                :class="{ 'cursor-pointer': medusahcExistsSpoolman }"
-                                @click-spool="onSpoolClick" />
-                        </span>
-                    </template>
-                    <span>
-                        <template v-if="spool">
-                            <div class="font-weight-bold">{{ spoolHeadline }}</div>
-                            <div>{{ filamentName }}</div>
-                            <div>{{ spoolWeightsOutput }}</div>
-                        </template>
-                        <div v-else>{{ $t('Panels.MedusahcPanel.NoSpoolAssigned') }}</div>
+    <div class="grey medusahc-tool d-flex flex-column pa-3" :class="toolClasses">
+        <v-btn dense small block class="elevation-0" :disabled="selectDisabled" @click="selectTool">
+            {{ toolName }}
+        </v-btn>
+        <div class="d-flex align-center mt-3">
+            <v-tooltip top>
+                <template #activator="{ on, attrs }">
+                    <span class="d-flex align-center" v-bind="attrs" v-on="on">
+                        <afc-filament-reel
+                            :percent="spoolPercent"
+                            :color="spoolColor"
+                            class="filament-spool"
+                            :class="{ 'cursor-pointer': medusahcExistsSpoolman }"
+                            @click-spool="onSpoolClick" />
                     </span>
-                </v-tooltip>
-                <spoolman-change-spool-dialog
-                    v-if="medusahcExistsSpoolman"
-                    v-model="showSpoolmanDialog"
-                    :tool="toolName" />
-            </v-col>
-            <v-col class="pr-6 pl-2 py-0 d-flex flex-column justify-space-between align-end">
+                </template>
+                <span>
+                    <template v-if="spool">
+                        <div class="font-weight-bold">{{ spoolHeadline }}</div>
+                        <div>{{ filamentName }}</div>
+                        <div>{{ spoolWeightsOutput }}</div>
+                    </template>
+                    <div v-else>{{ $t('Panels.MedusahcPanel.NoSpoolAssigned') }}</div>
+                </span>
+            </v-tooltip>
+            <spoolman-change-spool-dialog v-if="medusahcExistsSpoolman" v-model="showSpoolmanDialog" :tool="toolName" />
+            <div class="d-flex flex-column align-end flex-grow-1 ml-2 text-no-wrap">
                 <span class="font-weight-bold">{{ materialOutput }}</span>
                 <span class="text--disabled">{{ remainingWeightOutput }}</span>
-                <span class="text--disabled text-no-wrap">{{ temperatureOutput }}</span>
-            </v-col>
-        </v-row>
-        <v-row class="mt-0">
-            <v-col class="px-6 pt-2 pb-5 text-center">
-                <div class="text-truncate">{{ filamentName }}</div>
-                <div class="text-caption" :class="dockStateClass">{{ dockStateOutput }}</div>
-            </v-col>
-        </v-row>
+                <span class="text--disabled">{{ temperatureOutput }}</span>
+            </div>
+        </div>
+        <div class="mt-2 text-center">
+            <div class="text-truncate">{{ filamentName }}</div>
+            <div class="text-caption" :class="dockStateClass">{{ dockStateOutput }}</div>
+        </div>
     </div>
 </template>
 
@@ -147,7 +136,9 @@ export default class MedusahcPanelTool extends Mixins(BaseMixin, MedusahcMixin) 
 
     // Dock hall sensor t<N>: 1 while the hotend sits in its dock.
     get dockSensor(): number | null {
-        return this.medusahcSensors[`t${this.tool}`] ?? null
+        const value = this.medusahcSensors[`t${this.tool}`]
+
+        return value === undefined ? null : Number(value)
     }
 
     get dockStateOutput(): string {
@@ -184,8 +175,7 @@ export default class MedusahcPanelTool extends Mixins(BaseMixin, MedusahcMixin) 
     border-radius: 8px;
     box-sizing: border-box !important;
     border: 1px solid transparent;
-    flex-basis: 0;
-    min-width: 140px;
+    min-width: 0;
 }
 
 .filament-spool {

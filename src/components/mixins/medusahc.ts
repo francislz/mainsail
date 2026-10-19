@@ -18,7 +18,9 @@ export default class MedusahcMixin extends Vue {
     }
 
     get medusahcCurrentTool(): number {
-        return this.medusahc.current_tool ?? MEDUSAHC_NO_TOOL
+        const tool = Number(this.medusahc.current_tool ?? MEDUSAHC_NO_TOOL)
+
+        return Number.isNaN(tool) ? MEDUSAHC_NO_TOOL : tool
     }
 
     get medusahcOperation(): string {
@@ -34,7 +36,7 @@ export default class MedusahcMixin extends Vue {
     }
 
     get medusahcTools(): number[] {
-        const count = this.medusahc.tool_count ?? 0
+        const count = Number(this.medusahc.tool_count ?? 0)
 
         return [...Array(count).keys()]
     }

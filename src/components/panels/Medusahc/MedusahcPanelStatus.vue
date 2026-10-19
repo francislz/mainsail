@@ -1,26 +1,24 @@
 <template>
     <div>
-        <div class="rounded-lg grey border-1" :class="containerClasses">
-            <v-row>
-                <v-col class="pl-6 py-4 text-no-wrap">
-                    <v-tooltip top>
-                        <template #activator="{ on, attrs }">
-                            <span
-                                v-bind="attrs"
-                                class="sensor-status rounded-circle d-inline-block mr-2"
-                                :class="headSensorClasses"
-                                v-on="on" />
-                        </template>
-                        <span>{{ headSensorOutput }}</span>
-                    </v-tooltip>
-                    <span>{{ $t('Panels.MedusahcPanel.Toolhead') }}</span>
-                </v-col>
-                <v-col class="py-4 text-center">{{ operationOutput }}</v-col>
-                <v-col class="py-4 pr-6 text-right text-no-wrap">
-                    {{ $t('Panels.MedusahcPanel.Mounted') }}:
-                    <span :class="mountedClasses">{{ mountedOutput }}</span>
-                </v-col>
-            </v-row>
+        <div class="rounded-lg grey border-1 d-flex align-center px-4 py-3" :class="containerClasses">
+            <div class="flex-1 text-no-wrap">
+                <v-tooltip top>
+                    <template #activator="{ on, attrs }">
+                        <span
+                            v-bind="attrs"
+                            class="sensor-status rounded-circle d-inline-block mr-2"
+                            :class="headSensorClasses"
+                            v-on="on" />
+                    </template>
+                    <span>{{ headSensorOutput }}</span>
+                </v-tooltip>
+                <span>{{ $t('Panels.MedusahcPanel.Toolhead') }}</span>
+            </div>
+            <div class="flex-1 text-center">{{ operationOutput }}</div>
+            <div class="flex-1 text-right text-no-wrap">
+                {{ $t('Panels.MedusahcPanel.Mounted') }}:
+                <span :class="mountedClasses">{{ mountedOutput }}</span>
+            </div>
         </div>
         <v-alert v-if="medusahcLastError" :icon="mdiAlert" type="error" class="mt-3 mb-0" dense text>
             {{ medusahcLastError }}
@@ -53,7 +51,9 @@ export default class MedusahcPanelStatus extends Mixins(BaseMixin, MedusahcMixin
 
     // Toolhead hall sensor; only present when pin_watch has a pin_e configured.
     get headSensor(): number | null {
-        return this.medusahcSensors.e ?? null
+        const value = this.medusahcSensors.e
+
+        return value === undefined ? null : Number(value)
     }
 
     get headSensorClasses() {
@@ -96,6 +96,10 @@ export default class MedusahcPanelStatus extends Mixins(BaseMixin, MedusahcMixin
 </script>
 
 <style scoped>
+.flex-1 {
+    flex: 1 1 0;
+}
+
 .sensor-status {
     width: 12px;
     height: 12px;

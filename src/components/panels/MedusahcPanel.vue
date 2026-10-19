@@ -10,7 +10,7 @@
         </template>
         <v-card-text class="pt-1">
             <medusahc-panel-status />
-            <div class="d-flex flex-row flex-wrap mt-3 medusahc-tool-container">
+            <div class="mt-3 medusahc-tool-grid">
                 <medusahc-panel-tool v-for="tool in medusahcTools" :key="tool" :tool="tool" />
             </div>
         </v-card-text>
@@ -30,7 +30,10 @@ export default class MedusahcPanel extends Mixins(BaseMixin, MedusahcMixin) {
 </script>
 
 <style scoped>
-.medusahc-tool-container {
-    gap: 16px;
+/* Fixed three columns, so six tools always land as two rows of three */
+.medusahc-tool-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
 }
 </style>
