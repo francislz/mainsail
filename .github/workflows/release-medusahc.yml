@@ -31,6 +31,11 @@ jobs:
 
       - name: Build
         run: npm run build
+        env:
+          # Moonraker reads release_info.json to decide which repo to follow
+          # and which version is installed, so it must name this fork and tag.
+          RELEASE_PROJECT_OWNER: ${{ github.repository_owner }}
+          RELEASE_VERSION: ${{ github.ref_name }}
 
       - name: Publish release
         uses: softprops/action-gh-release@v2
