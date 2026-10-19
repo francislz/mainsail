@@ -38,21 +38,25 @@
                 </span>
             </div>
         </div>
-        <div class="d-flex mt-2 heat-group">
+        <v-item-group class="_btn-group d-flex flex-nowrap w-100 mt-2">
             <v-btn
-                v-for="preset in presets"
+                v-for="(preset, index) in presets"
                 :key="preset.name"
-                x-small
-                text
+                dense
                 class="flex-grow-1 px-0"
-                :class="{ 'heat-active': isActivePreset(preset) }"
+                :class="{ 'first-btn': index === 0 }"
+                :color="isActivePreset(preset) ? 'primary' : undefined"
                 @click="heat(preset.temperature)">
                 <span class="text-truncate">{{ preset.name }}</span>
             </v-btn>
-            <v-btn x-small text class="flex-grow-1 px-0" @click="heat(0)">
+            <v-btn
+                dense
+                class="flex-grow-1 px-0 last-btn"
+                :class="{ 'first-btn': presets.length === 0 }"
+                @click="heat(0)">
                 {{ $t('Panels.MedusahcPanel.Off') }}
             </v-btn>
-        </div>
+        </v-item-group>
     </div>
 </template>
 
@@ -221,32 +225,38 @@ export default class MedusahcPanelTool extends Mixins(BaseMixin, MedusahcMixin) 
     font-variant-numeric: tabular-nums;
 }
 
-.heat-group {
-    border: thin solid rgba(255, 255, 255, 0.12);
+/* Same button group as the AFC lane actions (AfcPanelUnitLaneActions.vue) */
+._btn-group {
     border-radius: 4px;
-    overflow: hidden;
+
+    .v-btn {
+        border-radius: 0;
+        border-color: rgba(255, 255, 255, 0.12);
+        border-style: solid;
+        border-width: thin;
+        box-shadow: none;
+        height: 28px;
+        opacity: 0.8;
+        min-width: auto !important;
+    }
+
+    .v-btn.first-btn {
+        border-top-left-radius: inherit;
+        border-bottom-left-radius: inherit;
+    }
+
+    .v-btn.last-btn {
+        border-top-right-radius: inherit;
+        border-bottom-right-radius: inherit;
+    }
+
+    .v-btn:not(.first-btn) {
+        border-left-width: 0;
+    }
 }
 
-html.theme--light .heat-group {
+html.theme--light ._btn-group .v-btn {
     border-color: rgba(0, 0, 0, 0.12);
-}
-
-.heat-group .v-btn {
-    border-radius: 0;
-    min-width: 0 !important;
-}
-
-.heat-group .v-btn + .v-btn {
-    border-left: thin solid rgba(255, 255, 255, 0.12);
-}
-
-html.theme--light .heat-group .v-btn + .v-btn {
-    border-left-color: rgba(0, 0, 0, 0.12);
-}
-
-.heat-group .heat-active {
-    color: var(--v-warning-base);
-    background-color: rgba(255, 152, 0, 0.16);
 }
 
 .v-application .border-primary {
