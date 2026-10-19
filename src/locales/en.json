@@ -755,17 +755,16 @@
         "MedusahcPanel": {
             "CleanNozzle": "Clean nozzle",
             "Detected": "Detected",
-            "DockEmpty": "Dock empty",
             "DropTool": "Drop tool",
             "Empty": "Empty",
             "Headline": "MedusaHC",
             "HeadSensor": "Toolhead sensor",
-            "InDock": "In dock",
             "Mounted": "Mounted",
             "NoHeadSensor": "No toolhead sensor configured",
             "None": "None",
+            "NoSpool": "No spool",
             "NoSpoolAssigned": "No spool assigned - click to select one",
-            "OnToolhead": "On toolhead",
+            "Off": "Off",
             "Operations": {
                 "changing": "Changing tool",
                 "dropping": "Dropping",
@@ -773,6 +772,8 @@
                 "picking": "Picking up"
             },
             "Toolhead": "Toolhead",
+            "ToolLost": "{tool} is not in its dock and the toolhead does not detect a hotend.",
+            "ToolsOutOfDock": "{tools} are out of their docks. Check the docks and the dock sensors before the next tool change.",
             "Unknown": "Unknown",
             "WeightRemainingUsed": "{remaining}g remaining | {used}g used"
         },

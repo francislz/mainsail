@@ -1,11 +1,44 @@
 import Vue from 'vue'
 import Component from 'vue-class-component'
 import { ServerSpoolmanStateSpool } from '@/store/server/spoolman/types'
+import { GuiPresetsStatePreset } from '@/store/gui/presets/types'
 
 // medusahc.current_tool uses -1 for "no hotend mounted" and -2 for "the dock
 // sensors disagree", see klippy/extras/medusahc.py in the MedusaHC repository.
 export const MEDUSAHC_NO_TOOL = -1
 export const MEDUSAHC_SENSOR_ERROR = -2
+
+export interface MedusahcHighlight {
+    selected: number | null
+    errors: number[]
+}
+
+// Exactly one hotend out of its dock with the toolhead sensor seeing it is the
+// normal state. More than one out of the docks, or one out while the toolhead is
+// empty, means a hotend is somewhere it should not be. Without dock sensors the
+// mounted tool reported by MedusaHC is used instead.
+export function computeMedusahcHighlight(
+    tools: number[],
+    sensors: Record<string, number>,
+    currentTool: number
+): MedusahcHighlight {
+    const read = (name: string): number | null => (sensors[name] === undefined ? null : Number(sensors[name]))
+
+    const hasDockSensors = tools.some((tool) => read(`t${tool}`) !== null)
+    if (!hasDockSensors) return { selected: currentTool >= 0 ? currentTool : null, errors: [] }
+
+    const out = tools.filter((tool) => read(`t${tool}`) === 0)
+    if (out.length > 1) return { selected: null, errors: out }
+    if (out.length === 0) return { selected: null, errors: [] }
+    if (read('e') === 0) return { selected: null, errors: out }
+
+    return { selected: out[0], errors: [] }
+}
+
+export interface MedusahcToolPreset {
+    name: string
+    temperature: number
+}
 
 @Component
 export default class MedusahcMixin extends Vue {
@@ -41,6 +74,17 @@ export default class MedusahcMixin extends Vue {
         return [...Array(count).keys()]
     }
 
+    // Hall sensor value, or null when that sensor is not configured.
+    getMedusahcSensor(name: string): number | null {
+        const value = this.medusahcSensors[name]
+
+        return value === undefined ? null : Number(value)
+    }
+
+    get medusahcHighlight(): MedusahcHighlight {
+        return computeMedusahcHighlight(this.medusahcTools, this.medusahcSensors, this.medusahcCurrentTool)
+    }
+
     get medusahcExistsSpoolman(): boolean {
         return this.$store.state.server.components.includes('spoolman')
     }
@@ -64,6 +108,20 @@ export default class MedusahcMixin extends Vue {
         const spools: ServerSpoolmanStateSpool[] = this.$store.state.server.spoolman?.spools ?? []
 
         return spools.find((spool) => spool.id === spoolId) ?? null
+    }
+
+    // Mainsail temperature presets that set a nozzle temperature for this tool:
+    // its own extruder entry when the preset has one, otherwise the generic one.
+    getMedusahcToolPresets(tool: number): MedusahcToolPreset[] {
+        const presets: GuiPresetsStatePreset[] = this.$store.getters['gui/presets/getPresets'] ?? []
+        const extruder = this.getMedusahcExtruderName(tool)
+
+        return presets.flatMap((preset) => {
+            const entry = preset.values[extruder]?.bool ? preset.values[extruder] : preset.values.extruder
+            if (!entry?.bool) return []
+
+            return [{ name: preset.name, temperature: Number(entry.value) }]
+        })
     }
 
     medusahcSend(gcode: string) {

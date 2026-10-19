@@ -20,6 +20,9 @@
                 <span :class="mountedClasses">{{ mountedOutput }}</span>
             </div>
         </div>
+        <v-alert v-if="dockErrorOutput" :icon="mdiAlert" type="error" class="mt-3 mb-0" dense text>
+            {{ dockErrorOutput }}
+        </v-alert>
         <v-alert v-if="medusahcLastError" :icon="mdiAlert" type="error" class="mt-3 mb-0" dense text>
             {{ medusahcLastError }}
         </v-alert>
@@ -29,31 +32,46 @@
 <script lang="ts">
 import { Component, Mixins } from 'vue-property-decorator'
 import BaseMixin from '@/components/mixins/base'
-import MedusahcMixin, { MEDUSAHC_NO_TOOL, MEDUSAHC_SENSOR_ERROR } from '@/components/mixins/medusahc'
+import MedusahcMixin, { MEDUSAHC_SENSOR_ERROR } from '@/components/mixins/medusahc'
 import { mdiAlert } from '@mdi/js'
 
 @Component
 export default class MedusahcPanelStatus extends Mixins(BaseMixin, MedusahcMixin) {
     mdiAlert = mdiAlert
 
+    get dockErrors(): number[] {
+        return this.medusahcHighlight.errors
+    }
+
     get hasError(): boolean {
-        return this.medusahcCurrentTool === MEDUSAHC_SENSOR_ERROR || this.medusahcLastError !== ''
+        return (
+            this.dockErrors.length > 0 ||
+            this.medusahcCurrentTool === MEDUSAHC_SENSOR_ERROR ||
+            this.medusahcLastError !== ''
+        )
     }
 
     get containerClasses() {
         return {
-            'border-primary': this.medusahcCurrentTool >= 0 && !this.hasError,
+            'border-primary': this.medusahcHighlight.selected !== null && !this.hasError,
             'border-error': this.hasError,
             'darken-3': this.$vuetify.theme.dark,
             'lighten-2': !this.$vuetify.theme.dark,
         }
     }
 
+    get dockErrorOutput(): string {
+        if (this.dockErrors.length === 0) return ''
+
+        const tools = this.dockErrors.map((tool) => `T${tool}`).join(', ')
+        if (this.dockErrors.length > 1) return this.$t('Panels.MedusahcPanel.ToolsOutOfDock', { tools }).toString()
+
+        return this.$t('Panels.MedusahcPanel.ToolLost', { tool: tools }).toString()
+    }
+
     // Toolhead hall sensor; only present when pin_watch has a pin_e configured.
     get headSensor(): number | null {
-        const value = this.medusahcSensors.e
-
-        return value === undefined ? null : Number(value)
+        return this.getMedusahcSensor('e')
     }
 
     get headSensorClasses() {
@@ -79,17 +97,19 @@ export default class MedusahcPanelStatus extends Mixins(BaseMixin, MedusahcMixin
     }
 
     get mountedOutput(): string {
-        if (this.medusahcCurrentTool === MEDUSAHC_SENSOR_ERROR)
+        if (this.dockErrors.length > 0 || this.medusahcCurrentTool === MEDUSAHC_SENSOR_ERROR)
             return this.$t('Panels.MedusahcPanel.Unknown').toString()
-        if (this.medusahcCurrentTool === MEDUSAHC_NO_TOOL) return this.$t('Panels.MedusahcPanel.None').toString()
 
-        return `T${this.medusahcCurrentTool}`
+        const tool = this.medusahcHighlight.selected
+        if (tool === null) return this.$t('Panels.MedusahcPanel.None').toString()
+
+        return `T${tool}`
     }
 
     get mountedClasses() {
         return {
-            'primary--text': this.medusahcCurrentTool >= 0,
-            'error--text': this.medusahcCurrentTool === MEDUSAHC_SENSOR_ERROR,
+            'primary--text': this.medusahcHighlight.selected !== null && !this.hasError,
+            'error--text': this.hasError,
         }
     }
 }
