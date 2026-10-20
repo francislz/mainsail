@@ -771,6 +771,7 @@
                 "idle": "Idle",
                 "picking": "Picking up"
             },
+            "Toolchanges": "Toolchanges",
             "Toolhead": "Toolhead",
             "ToolLost": "{tool} is not in its dock and the toolhead does not detect a hotend.",
             "ToolsOutOfDock": "{tools} are out of their docks. Check the docks and the dock sensors before the next tool change.",

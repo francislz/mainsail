@@ -64,6 +64,21 @@ export default class MedusahcMixin extends Vue {
         return this.medusahc.last_error ?? ''
     }
 
+    get medusahcToolchanges(): number {
+        return Number(this.medusahc.toolchanges ?? 0)
+    }
+
+    // Slicer's "total filament change" for the file being printed (Moonraker
+    // metadata), or null when unknown.
+    get medusahcToolchangesTotal(): number | null {
+        const printer = this.$store.state.printer
+        const file = printer.current_file ?? {}
+        if (!file.filename || file.filename !== printer.print_stats?.filename) return null
+
+        const total = file.filament_change_count
+        return typeof total === 'number' ? total : null
+    }
+
     get medusahcSensors(): Record<string, number> {
         return this.medusahc.sensors ?? {}
     }

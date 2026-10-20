@@ -15,6 +15,10 @@
                 <span>{{ $t('Panels.MedusahcPanel.Toolhead') }}</span>
             </div>
             <div class="flex-1 text-center">{{ operationOutput }}</div>
+            <div class="flex-1 text-center toolchanges">
+                <div class="text-caption text--secondary">{{ $t('Panels.MedusahcPanel.Toolchanges') }}</div>
+                <div>{{ toolchangesOutput }}</div>
+            </div>
             <div class="flex-1 text-right text-no-wrap">
                 {{ $t('Panels.MedusahcPanel.Mounted') }}:
                 <span :class="mountedClasses">{{ mountedOutput }}</span>
@@ -96,6 +100,12 @@ export default class MedusahcPanelStatus extends Mixins(BaseMixin, MedusahcMixin
         return this.$te(key) ? this.$t(key).toString() : this.medusahcOperation
     }
 
+    get toolchangesOutput(): string {
+        const total = this.medusahcToolchangesTotal
+
+        return `${this.medusahcToolchanges} / ${total ?? '--'}`
+    }
+
     get mountedOutput(): string {
         if (this.dockErrors.length > 0 || this.medusahcCurrentTool === MEDUSAHC_SENSOR_ERROR)
             return this.$t('Panels.MedusahcPanel.Unknown').toString()
@@ -118,6 +128,11 @@ export default class MedusahcPanelStatus extends Mixins(BaseMixin, MedusahcMixin
 <style scoped>
 .flex-1 {
     flex: 1 1 0;
+}
+
+.toolchanges {
+    line-height: 1.2;
+    font-variant-numeric: tabular-nums;
 }
 
 .sensor-status {
